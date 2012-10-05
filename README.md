@@ -102,6 +102,15 @@ Get a nice looking report
     
 A sample report can be found here: http://bit.ly/QQkq7J
 
+License
+-------
+
+Copyright 2012 Og Maciel and contributors.
+
+Licensed under [version 3 of the GPL][gpl].
+
+[gpl]: http://www.gnu.org/copyleft/gpl.html
+
 Author
 ------
 
