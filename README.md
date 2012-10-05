@@ -13,7 +13,7 @@ Installation
 Installation is still manual:
 
 1. Copy the `bugwrangler` file to your computer.
-2. Install `python-bugzilla <http://pypi.python.org/pypi/python-bugzilla/0.6.2>`_.
+2. Install [python-bugzilla](http://pypi.python.org/pypi/python-bugzilla/0.6.2).
 3. Make it executable.
 4. Add it to your PYTHONPATH.
 
@@ -98,10 +98,12 @@ How many bugs have I verified so far for the Katello and CloudForms System Engin
 Get a nice looking report
 
     $ bugwrangler --status VERIFIED,CLOSED --product "Katello,CloudForms System Engine" -q omaciel ATredhat DOT com --html
-    A report has been generated and can be found here: [$PWD/20121005182936.html](http://bit.ly/PYtfwS)
+    A report has been generated and can be found here: 20121005183811.html
+    
+A sample report can be found here: http://bit.ly/PYtfwS
 
 Author
 ------
 
 This software is developed by
-`Og Maciel <http://ogmaciel.tumblr.com>`_.
+Og Maciel http://ogmaciel.tumblr.com
