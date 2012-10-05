@@ -1,0 +1,250 @@
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+
+try:
+    import bugzilla
+except ImportError:
+    print "Please install python-bugzilla and try again: http://pypi.python.org/pypi/python-bugzilla/0.6.2"
+    sys.exit(-1)
+
+from datetime import datetime
+from optparse import OptionGroup,  OptionParser
+
+
+url = "https://bugzilla.redhat.com/xmlrpc.cgi"
+STATUS_LIST = "NEW, ASSIGNED, MODIFIED, ON_DEV, ON_QA, VERIFIED, POST, CLOSED"
+
+def login(bz, username, password):
+    """
+    Logs in to Bugzilla using credentials.
+    """
+
+    bz.login(user=username, password=password)
+
+    
+def run_query(bz, query):
+    """
+    Runs a Bugzilla query and returns the results.
+    """
+    
+    ret = bz.query(query)
+
+    return ret
+
+
+def build_query(bz, options):
+    """
+    Builds a query object using the parameters passed from command line.
+    """
+    
+    product = [p.strip() for p in options.product.split(",")]
+    status = [s.strip().upper() for s in options.status.split(",")]
+
+    query = bz.build_query(
+        product=product,
+        status=status)
+
+    query["query_format"] = "advanced"
+
+    if options.start:
+        query["f1"] = "delta_ts"
+        # From the start of the day
+        query["v1"] = "%s 00:00:00" % options.start
+        query["o1"] = "greaterthaneq"
+
+    if options.end:
+        query["f2"] = "delta_ts"
+        # To the end of the day
+        query["v2"] = "%s 23:59:50" % options.end
+        query["o2"] = "lessthaneq"
+
+    if options.assigned:
+        query["f3"] = "assigned_to"
+        query["o3"] = "equals"
+        query["v3"] = options.assigned
+
+    if options.contact:
+        query["f4"] = "qa_contact"
+        query["o4"] = "equals"
+        query["v4"] = options.contact
+
+    return query
+
+
+def text_report(result):
+    """
+    Outputs query results to standard out.
+    """
+
+
+    # sort results by qa_contact
+    result.sort(key=lambda k: k.qa_contact)
+
+    for bug in result:
+        print "[%s] %s - %s - <%s> - %s" %  (
+            bug.bug_id,
+            bug.severity,
+            bug.short_desc[:60],
+            bug.qa_contact,
+            bug.status
+            )
+
+
+def html_report(result):
+    """
+    Generates a html report from query results.
+    """
+    
+    # sort results by qa_contact
+    result.sort(key=lambda k: k.qa_contact)
+
+    fn = "%s.html" % datetime.now().strftime("%Y%m%d%H%M%S")
+
+    fd = open(fn, "w")
+
+    fd.write("<!DOCTYPE html>\n")
+    fd.write("<htmL>\n")
+
+    fd.write("<head>\n")
+    fd.write("<title>CFSE Bugs List</title>\n")
+    fd.write("<link href=\"http://omaciel.fedorapeople.org/bootstrap/css/bootstrap.min.css\"  rel=\"stylesheet\">\n")
+    fd.write("</head>\n")
+
+    fd.write("<body>\n")
+
+    fd.write("<script src='http://code.jquery.com/jquery-latest.js'></script>\n")
+    fd.write("<script src='http://omaciel.fedorapeople.org/bootstrap/js/bootstrap.min.js'></script>\n")
+
+    fd.write("<table class='table table-striped'>\n")
+    fd.write("<thead>\n")
+    fd.write("<tr>\n")
+    fd.write("<th>ID</th>\n")
+    fd.write("<th>Severity</th>\n")
+    fd.write("<th>Description</th>\n")
+    fd.write("<th>QA Contact</th>\n")
+    fd.write("<th>Status</th>\n")
+    fd.write("</tr>\n")
+    fd.write("</thead>\n")
+
+    fd.write("<tbody>\n")
+    for bug in result:
+        fd.write("<tr>\n")
+        fd.write("<td>")
+        fd.write("<a href='%s'>" % bug.url)
+
+        if bug.severity.lower() == "urgent":
+            fd.write("<span class=\"label label-important\">%s</span>" % bug.id)
+        elif bug.severity.lower() == "high":
+            fd.write("<span class=\"label label-warning\">%s</span>" % bug.id)
+        elif bug.severity.lower() == "medium":
+            fd.write("<span class=\"label label-info\">%s</span>" % bug.id)
+        elif bug.severity.lower() == "low":
+            fd.write("<span class=\"label label-default\">%s</span>" % bug.id)
+        else:
+            fd.write("<span class=\"label label-inverse\">%s</span>" % bug.id)
+
+        fd.write("</a></td>\n")
+        fd.write("<td>%s</td>\n" % bug.severity)
+        fd.write("<td>%s</td>\n" % bug.short_desc[:60])
+        fd.write("<td>%s</td>\n" % bug.qa_contact)
+        fd.write("<td>%s</td>\n" % bug.status)
+        fd.write("</tr>\n")
+    fd.write("</tbody>\n")
+
+    fd.write("<tfoot>\n")
+    fd.write("<tr>\n")
+    fd.write("<td><strong>Total: %s</strong></td>\n" % len(result))
+    fd.write("</tr>\n")
+    fd.write("</tfoot>\n")
+
+    fd.write("</table>\n")
+    fd.write("</body>\n")
+    fd.write("</html>\n")
+
+    fd.close()
+
+    print "A report has been generated and can be found here: %s" % (os.path.abspath(os.path.join(os.curdir, fn)))
+
+
+def do_stuff(options):
+
+    bz = bugzilla.Bugzilla(url=url)
+
+    username = options.username
+    password = options.password
+
+    if username and password:
+        login(bz, username, password)
+
+    query = build_query(bz, options)
+
+    if options.html:
+        html_report(run_query(bz, query))
+    # Defaults to standard output.
+    else:
+        text_report(run_query(bz, query))
+
+
+if __name__ == '__main__':
+
+    description = "Performs queries and actions against Red Hat's Bugzilla."
+
+    usage = "Usage: %prog [options]"
+    epilog = "Constructive comments and feedback can be sent to Og Maciel <omaciel at ogmaciel dot com>."
+    version = "%prog version 0.1"
+
+    parser = OptionParser(usage=usage, description=description, epilog=epilog, version=version)
+
+    groupLogin = OptionGroup(parser, "Bugzilla Login settings",
+               "Use the email and password to authenticate against Bugzilla."
+               "You may want to login to access any issues that may require authentication.")
+    groupLogin.add_option('-u', '--username',  dest='username', 
+        help='Valid Bugzilla username.', type=str)
+    groupLogin.add_option('-p', '--password',  dest='password',
+        help='Valid Bugzilla password.', type=str)
+    parser.add_option_group(groupLogin)
+
+    # TODO: Allow searching by BZ IDs
+    parser.add_option('-b', '--bug_id', dest='bug_id',  
+        help="List of comma separated bug IDs.", type=str)
+
+    groupReport = OptionGroup(parser, "Reporting options",
+                              "All queries are displayed in the console unless you use this option to "
+                              "create a HTML formatted report."
+                              )
+    groupReport.add_option('--html',  dest='html', action="store_true", default=False)
+
+    parser.add_option_group(groupReport)
+    
+    parser.add_option('--product', dest='product',
+        help="", type=str)
+    parser.add_option('-q', '--qa_contact', dest='contact',
+        help="", type=str)
+    parser.add_option('-a', '--assigned_to', dest='assigned',
+                      help="Email of person assigned to work on bug.", type=str)
+
+    groupStatus = OptionGroup(parser, "Bugzilla STATUS options",
+                              "Use any combination of the following status values: "
+                              "%s" % STATUS_LIST)
+    groupStatus.add_option('-s', '--status', dest='status',
+        help="Bugzilla bug status.  [default: %default]", type=str, default='ON_QA')
+    parser.add_option_group(groupStatus)
+    
+    # Date range filtering
+    groupTime = OptionGroup(parser, "Date filtering")
+    groupTime.add_option('--start', dest="start",
+                      help="Searches Bugzilla from start date.", type=str)
+    groupTime.add_option('--end', dest="end",
+                      help="Searches Bugzilla up to end date.", type=str)
+
+    parser.add_option_group(groupTime)
+    
+    (options, args) = parser.parse_args()
+
+    if not options.product:
+       parser.print_help()
+       sys.exit(-1)
+
+    do_stuff(options)
