@@ -100,7 +100,7 @@ Get a nice looking report
     $ bugwrangler --status VERIFIED,CLOSED --product "Katello,CloudForms System Engine" -q omaciel ATredhat DOT com --html
     A report has been generated and can be found here: 20121005183811.html
     
-A sample report can be found here: http://bit.ly/PYtfwS
+A sample report can be found here: http://bit.ly/QQkq7J
 
 Author
 ------
