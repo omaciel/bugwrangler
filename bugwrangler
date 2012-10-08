@@ -21,8 +21,10 @@ def login(bz, username, password):
     Logs in to Bugzilla using credentials.
     """
 
-    bz.login(user=username, password=password)
+    ret = bz.login(user=username, password=password)
 
+    if not ret:
+       print "Was not able to authenticate user using provided credentials."
     
 def run_query(bz, query):
     """
