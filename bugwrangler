@@ -110,7 +110,7 @@ def html_report(result):
     fd.write("<htmL>\n")
 
     fd.write("<head>\n")
-    fd.write("<title>CFSE Bugs List</title>\n")
+    fd.write("<title>Bugs List</title>\n")
     fd.write("<link href=\"http://omaciel.fedorapeople.org/bootstrap/css/bootstrap.min.css\"  rel=\"stylesheet\">\n")
     fd.write("</head>\n")
 
