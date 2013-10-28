@@ -25,12 +25,12 @@ def login(bz, username, password):
 
     if not ret:
        print "Was not able to authenticate user using provided credentials."
-    
+
 def run_query(bz, query):
     """
     Runs a Bugzilla query and returns the results.
     """
-    
+
     ret = bz.query(query)
 
     return ret
@@ -40,7 +40,7 @@ def build_query(bz, options):
     """
     Builds a query object using the parameters passed from command line.
     """
-    
+
     product = [p.strip() for p in options.product.split(",")]
     status = [s.strip().upper() for s in options.status.split(",")]
 
@@ -134,7 +134,7 @@ def html_report(result):
     for bug in result:
         fd.write("<tr>\n")
         fd.write("<td>")
-        fd.write("<a href='%s'>" % bug.url)
+        fd.write("<a href='%s'>" % bug.weburl)
 
         if bug.severity.lower() == "urgent":
             fd.write("<span class=\"label label-important\">%s</span>" % bug.id)
