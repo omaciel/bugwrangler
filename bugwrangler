@@ -137,15 +137,15 @@ def html_report(result):
         fd.write("<a href='%s'>" % bug.weburl)
 
         if bug.severity.lower() == "urgent":
-            fd.write("<span class=\"label label-important\">%s</span>" % bug.id)
+            fd.write("<img src=\"http://b.repl.ca/v1/Bugzilla-%s-red.png\" />" % bug.id)
         elif bug.severity.lower() == "high":
-            fd.write("<span class=\"label label-warning\">%s</span>" % bug.id)
+            fd.write("<img src=\"http://b.repl.ca/v1/Bugzilla-%s-orange.png\" />" % bug.id)
         elif bug.severity.lower() == "medium":
-            fd.write("<span class=\"label label-info\">%s</span>" % bug.id)
+            fd.write("<img src=\"http://b.repl.ca/v1/Bugzilla-%s-green.png\" />" % bug.id)
         elif bug.severity.lower() == "low":
-            fd.write("<span class=\"label label-default\">%s</span>" % bug.id)
+            fd.write("<img src=\"http://b.repl.ca/v1/Bugzilla-%s-blue.png\" />" % bug.id)
         else:
-            fd.write("<span class=\"label label-inverse\">%s</span>" % bug.id)
+            fd.write("<img src=\"http://b.repl.ca/v1/Bugzilla-%s-gray.png\" />" % bug.id)
 
         fd.write("</a></td>\n")
         fd.write("<td>%s</td>\n" % bug.severity)
