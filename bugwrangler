@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
+"""
+Python wrapper for python-bugzilla module.
+"""
+
 import os
 import sys
 
 try:
     import bugzilla
 except ImportError:
-    print "Please install python-bugzilla and try again: http://pypi.python.org/pypi/python-bugzilla/0.6.2"
+    print "Please install python-bugzilla and try again"
+    print " - http://pypi.python.org/pypi/python-bugzilla/0.6.2"
     sys.exit(-1)
 
 from datetime import datetime
@@ -24,7 +29,7 @@ def login(bz, username, password):
     ret = bz.login(user=username, password=password)
 
     if not ret:
-       print "Was not able to authenticate user using provided credentials."
+        print "Was not able to authenticate user using provided credentials."
 
 def run_query(bz, query):
     """
@@ -98,7 +103,7 @@ def html_report(result):
     """
     Generates a html report from query results.
     """
-    
+
     # sort results by qa_contact
     result.sort(key=lambda k: k.qa_contact)
 
@@ -171,6 +176,9 @@ def html_report(result):
 
 
 def do_stuff(options):
+    """
+    Calls python-bugzilla with arguments from command line.
+    """
 
     bz = bugzilla.Bugzilla(url=url)
 
@@ -202,14 +210,14 @@ if __name__ == '__main__':
     groupLogin = OptionGroup(parser, "Bugzilla Login settings",
                "Use the email and password to authenticate against Bugzilla."
                "You may want to login to access any issues that may require authentication.")
-    groupLogin.add_option('-u', '--username',  dest='username', 
+    groupLogin.add_option('-u', '--username',  dest='username',
         help='Valid Bugzilla username.', type=str)
     groupLogin.add_option('-p', '--password',  dest='password',
         help='Valid Bugzilla password.', type=str)
     parser.add_option_group(groupLogin)
 
     # TODO: Allow searching by BZ IDs
-    parser.add_option('-b', '--bug_id', dest='bug_id',  
+    parser.add_option('-b', '--bug_id', dest='bug_id',
         help="List of comma separated bug IDs.", type=str)
 
     groupReport = OptionGroup(parser, "Reporting options",
@@ -219,7 +227,7 @@ if __name__ == '__main__':
     groupReport.add_option('--html',  dest='html', action="store_true", default=False)
 
     parser.add_option_group(groupReport)
-    
+
     parser.add_option('--product', dest='product',
         help="", type=str)
     parser.add_option('-q', '--qa_contact', dest='contact',
@@ -233,7 +241,7 @@ if __name__ == '__main__':
     groupStatus.add_option('-s', '--status', dest='status',
         help="Bugzilla bug status.  [default: %default]", type=str, default='ON_QA')
     parser.add_option_group(groupStatus)
-    
+
     # Date range filtering
     groupTime = OptionGroup(parser, "Date filtering")
     groupTime.add_option('--start', dest="start",
@@ -242,11 +250,11 @@ if __name__ == '__main__':
                       help="Searches Bugzilla up to end date.", type=str)
 
     parser.add_option_group(groupTime)
-    
+
     (options, args) = parser.parse_args()
 
     if not options.product:
-       parser.print_help()
-       sys.exit(-1)
+        parser.print_help()
+        sys.exit(-1)
 
     do_stuff(options)
