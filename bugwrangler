@@ -11,7 +11,7 @@ try:
     import bugzilla
 except ImportError:
     print "Please install python-bugzilla and try again"
-    print " - http://pypi.python.org/pypi/python-bugzilla/0.6.2"
+    print " - http://pypi.python.org/pypi/python-bugzilla/0.8.0"
     sys.exit(-1)
 
 from datetime import datetime
